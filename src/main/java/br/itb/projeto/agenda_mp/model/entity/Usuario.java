@@ -26,8 +26,8 @@ public class Usuario {
     @Lob
     private byte[] foto;
     
-    @Column(nullable = false)
-    private LocalDateTime dataCadastro;
+    //@Column(nullable = false)
+    //private LocalDateTime dataCadastro;
     
     @Column(nullable = false, length = 20)
     private String statusUsuario;

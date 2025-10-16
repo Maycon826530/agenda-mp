@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/agendas")
+@RequestMapping("/api/agenda")
 public class AgendaController {
     
     @Autowired

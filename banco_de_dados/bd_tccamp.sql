@@ -1,4 +1,4 @@
--- Verificar se o banco de dados 'tccamp2' existe e, se sim, apagá-lo
+-- Verificar se o banco de dados 'tccamp2' existe e, se sim, apagï¿½-lo
 USE master;
 
 USE bd_tccamp
@@ -22,20 +22,20 @@ CREATE TABLE Usuarios
    nome          VARCHAR(100) NOT NULL,
    email         VARCHAR(100) UNIQUE NOT NULL,
    senha         VARCHAR(100) NOT NULL,
-   nivelAcesso   VARCHAR(10)  NULL, -- ADMIN ou USER
+   nivel_acesso   VARCHAR(10)  NULL, -- ADMIN ou USER
    foto          VARBINARY(MAX) NULL,
-   dataCadastro  SMALLDATETIME NOT NULL,
-   statusUsuario VARCHAR(20)   NOT NULL, -- ATIVO ou INATIVO ou TROCAR_SENHA
+   data_cadastro  SMALLDATETIME NOT NULL,
+   status_usuario VARCHAR(20)   NOT NULL, -- ATIVO ou INATIVO ou TROCAR_SENHA
 
    PRIMARY KEY (id)
 );
 GO
 
 -- Inserir dados na tabela 'Usuarios'
-INSERT INTO Usuarios (nome, email, senha, nivelAcesso, foto, dataCadastro, statusUsuario)
+INSERT INTO Usuarios (nome, email, senha, nivel_acesso, foto, data_cadastro, status_usuario)
 VALUES 
 ('Fulano da Silva', 'fulano@email.com.br', 'MTIzNDU2Nzg=', 'ADMIN', NULL, GETDATE(), 'ATIVO'),
-('Beltrana de Sá', 'beltrana@email.com.br', 'MTIzNDU2Nzg=', 'USER', NULL, GETDATE(), 'ATIVO'),
+('Beltrana de Sï¿½', 'beltrana@email.com.br', 'MTIzNDU2Nzg=', 'USER', NULL, GETDATE(), 'ATIVO'),
 ('Sicrana de Oliveira', 'sicrana@email.com.br', 'MTIzNDU2Nzg=', 'USER', NULL, GETDATE(), 'INATIVO'),
 ('Ordnael Zurc', 'ordnael@email.com.br', 'MTIzNDU2Nzg=', 'USER', NULL, GETDATE(), 'TROCAR_SENHA');
 GO
@@ -50,7 +50,7 @@ CREATE TABLE Cliente
    id INT IDENTITY,
    nome VARCHAR(100) NOT NULL,
    email CHAR(100) NOT NULL,
-   dataNascimento SMALLDATETIME NOT NULL,
+   data_nascimento SMALLDATETIME NOT NULL,
    PRIMARY KEY (id)
 );
 GO
@@ -85,8 +85,9 @@ CREATE TABLE Agenda
    dataInicio SMALLDATETIME NOT NULL,
    dataFim SMALLDATETIME NOT NULL,
    observacoes VARCHAR(100) NOT NULL,
+   usuarios_id INT NULL,
    PRIMARY KEY (id),
-   FOREIGN KEY (Usuarios_id) REFERENCES Usuarios (id)
+   FOREIGN KEY (usuarios_id) REFERENCES Usuarios (id)
 );
 GO
 
@@ -107,10 +108,11 @@ CREATE TABLE Medicamento
    descricao VARCHAR(100) NOT NULL,
    tipo VARCHAR(100) NOT NULL,
    complemento VARCHAR(50) NULL,
-   dataCadastro SMALLDATETIME NOT NULL,
-   statusMedicamento VARCHAR(20) NOT NULL, -- ATIVO ou INATIVO
+   data_cadastro SMALLDATETIME NOT NULL,
+   status_medicamento VARCHAR(20) NOT NULL, -- ATIVO ou INATIVO
+   agenda_id INT NULL,
    PRIMARY KEY (id),
-   FOREIGN KEY (Agenda_id) REFERENCES Agenda (id)
+   FOREIGN KEY (agenda_id) REFERENCES Agenda (id)
 );
 GO
 
@@ -121,14 +123,17 @@ CREATE TABLE Historico
    dosagem VARCHAR(100) NOT NULL,
    observacoes VARCHAR(100) NOT NULL,
    horario TIME NOT NULL,
+   medicamento_id INT NULL,
    PRIMARY KEY (id),
-   FOREIGN KEY (Medicamento_id) REFERENCES Medicamento (id)
+   FOREIGN KEY (medicamento_id) REFERENCES Medicamento (id)
 );
 GO
 
--- Opcional: Apagar a tabela 'Usuarios' após verificar os dados
+-- Opcional: Apagar a tabela 'Usuarios' apï¿½s verificar os dados
 -- DROP TABLE Usuarios;
 GO
 
 
 SELECT * FROM Cadastro
+
+SELECT * FROM Usuarios

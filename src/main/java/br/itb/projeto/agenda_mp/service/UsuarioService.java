@@ -15,7 +15,15 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
     
     public List<Usuario> findAll() {
-        return usuarioRepository.findAll();
+        try {
+            List<Usuario> usuarios = usuarioRepository.findAll();
+            System.out.println("Encontrados " + usuarios.size() + " usuários no banco");
+            return usuarios;
+        } catch (Exception e) {
+            System.err.println("Erro ao buscar todos os usuários: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
     
     public Optional<Usuario> findById(Long id) {
@@ -38,6 +46,50 @@ public class UsuarioService {
     }
     
     public Optional<Usuario> login(String email, String senha) {
-        return usuarioRepository.findByEmailAndSenha(email, senha);
+        try {
+            System.out.println("Buscando usuário com email: " + email);
+            
+            // Primeiro verifica se o usuário existe
+            Optional<Usuario> usuarioExiste = usuarioRepository.findByEmail(email);
+            if (usuarioExiste.isEmpty()) {
+                System.out.println("Usuário não encontrado com email: " + email);
+                return Optional.empty();
+            }
+            
+            // Verifica se a senha está correta
+            Optional<Usuario> usuario = usuarioRepository.findByEmailAndSenha(email, senha);
+            if (usuario.isEmpty()) {
+                System.out.println("Senha incorreta para o email: " + email);
+            } else {
+                System.out.println("Login bem-sucedido para: " + email);
+            }
+            
+            return usuario;
+        } catch (Exception e) {
+            System.err.println("Erro durante autenticação: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+    
+    public boolean updateProfile(Long userId, String nome, String senhaAtual, String novaSenha) {
+        Optional<Usuario> usuarioOpt = findById(userId);
+        if (usuarioOpt.isEmpty()) {
+            return false;
+        }
+        
+        Usuario usuario = usuarioOpt.get();
+        
+        // Validar senha atual
+        if (!usuario.getSenha().equals(senhaAtual)) {
+            return false;
+        }
+        
+        // Atualizar dados
+        usuario.setNome(nome);
+        usuario.setSenha(novaSenha);
+        
+        save(usuario);
+        return true;
     }
 }

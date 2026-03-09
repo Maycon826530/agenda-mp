@@ -137,3 +137,6 @@ GO
 SELECT * FROM Cadastro
 
 SELECT * FROM Usuarios
+
+DELETE FROM Cadastro
+WHERE ID = 3;

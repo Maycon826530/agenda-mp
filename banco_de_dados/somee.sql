@@ -69,6 +69,23 @@ CREATE TABLE Historico
    FOREIGN KEY (agenda_id) REFERENCES Agenda (id)
 );
 GO
+
+CREATE TABLE Lembrete
+(
+   id INT IDENTITY,
+   titulo VARCHAR(120) NOT NULL,
+   descricao VARCHAR(500) NULL,
+   data DATE NOT NULL,
+   horario TIME NOT NULL,
+   usuarios_id INT NOT NULL,
+   PRIMARY KEY (id),
+   FOREIGN KEY (usuarios_id) REFERENCES Usuarios (id)
+);
+GO
+
+CREATE INDEX IX_Lembrete_Usuario_Data
+ON Lembrete (usuarios_id, data, horario);
+GO
  
 SELECT * FROM Usuarios
  

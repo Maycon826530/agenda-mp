@@ -3,6 +3,7 @@ package br.itb.projeto.agenda_mp.service;
 import br.itb.projeto.agenda_mp.model.entity.Usuario;
 import br.itb.projeto.agenda_mp.model.repository.AgendaRepository;
 import br.itb.projeto.agenda_mp.model.repository.HistoricoRepository;
+import br.itb.projeto.agenda_mp.model.repository.LembreteRepository;
 import br.itb.projeto.agenda_mp.model.repository.MedicamentoRepository;
 import br.itb.projeto.agenda_mp.model.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class UsuarioService {
 
     @Autowired
     private HistoricoRepository historicoRepository;
+
+    @Autowired
+    private LembreteRepository lembreteRepository;
 
     public List<Usuario> findAll() {
         try {
@@ -96,6 +100,7 @@ public class UsuarioService {
             medicamentoRepository.deleteByAgendaId(agenda.getId());
         }
 
+        lembreteRepository.deleteByUsuarioId(id);
         agendaRepository.deleteAll(agendas);
         usuarioRepository.deleteById(id);
         return true;

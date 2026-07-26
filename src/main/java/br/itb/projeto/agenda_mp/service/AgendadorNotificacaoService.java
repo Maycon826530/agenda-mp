@@ -35,7 +35,13 @@ public class AgendadorNotificacaoService {
         System.out.println("SCHEDULER RODANDO - Verificando horário: " + agora);
 
         try {
-            List<Agenda> agendas = agendaRepository.findByHorario(agora);
+            List<Agenda> agendas = agendaRepository.findAll().stream()
+                    .filter(agenda -> agenda.getHorario() != null)
+                    .filter(agenda -> agenda.getHorario()
+                            .withSecond(0)
+                            .withNano(0)
+                            .equals(agora))
+                    .toList();
 
             for (Agenda agenda : agendas) {
                 String tipoNotificacao = agenda.getUsuario().getTipoNotificacao();

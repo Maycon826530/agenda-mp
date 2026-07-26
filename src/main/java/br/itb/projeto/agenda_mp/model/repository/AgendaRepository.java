@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -18,9 +17,8 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     @Query("""
             SELECT DISTINCT a
             FROM Agenda a
-            WHERE a.horario = :horario
-              AND a.dataInicio <= :agora
-              AND a.dataFim >= :agora
+            WHERE a.dataInicio <= :agora
+              AND a.dataFim >= :inicio
               AND EXISTS (
                   SELECT m.id
                   FROM Medicamento m
@@ -29,7 +27,7 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
               )
             """)
     List<Agenda> findAgendasAtivasParaNotificacao(
-            @Param("horario") LocalTime horario,
+            @Param("inicio") LocalDateTime inicio,
             @Param("agora") LocalDateTime agora
     );
 }

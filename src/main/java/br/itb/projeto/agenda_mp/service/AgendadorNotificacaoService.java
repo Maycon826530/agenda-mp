@@ -1,10 +1,14 @@
 package br.itb.projeto.agenda_mp.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +23,11 @@ import br.itb.projeto.agenda_mp.model.repository.LembreteRepository;
 @Service
 public class AgendadorNotificacaoService {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(AgendadorNotificacaoService.class);
+    private static final int INITIAL_LOOKBACK_MINUTES = 10;
+    private static final int MAX_LOOKBACK_MINUTES = 60;
+
     @Autowired
     private AgendaRepository agendaRepository;
 
@@ -31,51 +40,106 @@ public class AgendadorNotificacaoService {
     @Value("${app.notifications.zone}")
     private String notificationTimeZone;
 
-    @Scheduled(cron = "0 * * * * *", zone = "${app.notifications.zone}")
-    public void verificarNotificacoes() {
+    private final Map<String, LocalDateTime> notificacoesEnviadas =
+            new ConcurrentHashMap<>();
+    private LocalDateTime ultimaVerificacao;
+
+    @Scheduled(fixedDelay = 15000, initialDelay = 5000)
+    public synchronized void verificarNotificacoes() {
         LocalDateTime agora = LocalDateTime.now(ZoneId.of(notificationTimeZone))
-                .withSecond(0)
                 .withNano(0);
-        LocalTime horarioAtual = agora.toLocalTime();
+        LocalDateTime limite = agora.minusMinutes(MAX_LOOKBACK_MINUTES);
+        LocalDateTime inicio = ultimaVerificacao == null
+                ? agora.minusMinutes(INITIAL_LOOKBACK_MINUTES)
+                : ultimaVerificacao.minusSeconds(1);
+
+        if (inicio.isBefore(limite) || inicio.isAfter(agora)) {
+            inicio = limite;
+        }
+
+        LOGGER.info("Verificando notificacoes entre {} e {}", inicio, agora);
 
         try {
-            List<Agenda> agendas = agendaRepository.findAgendasAtivasParaNotificacao(
-                    horarioAtual,
-                    agora
-            );
+            verificarMedicamentos(inicio, agora);
+            verificarLembretes(inicio, agora);
+            ultimaVerificacao = agora;
+            limparDeduplicacao(agora.minusDays(1));
+        } catch (Exception exception) {
+            LOGGER.error("Falha ao verificar notificacoes", exception);
+        }
+    }
 
-            for (Agenda agenda : agendas) {
-                enviarParaUsuario(
+    private void verificarMedicamentos(LocalDateTime inicio, LocalDateTime agora) {
+        List<Agenda> agendas =
+                agendaRepository.findAgendasAtivasParaNotificacao(inicio, agora);
+
+        for (Agenda agenda : agendas) {
+            for (LocalDate data = inicio.toLocalDate();
+                    !data.isAfter(agora.toLocalDate());
+                    data = data.plusDays(1)) {
+                LocalDateTime horarioAgendado =
+                        LocalDateTime.of(data, agenda.getHorario());
+
+                if (!estaNaJanela(horarioAgendado, inicio, agora)
+                        || horarioAgendado.isBefore(agenda.getDataInicio())
+                        || horarioAgendado.isAfter(agenda.getDataFim())) {
+                    continue;
+                }
+
+                enviarUmaVez(
+                        "medicamento|" + agenda.getId() + "|" + horarioAgendado,
+                        horarioAgendado,
                         agenda.getUsuario(),
                         "Hora do medicamento!",
                         "Está na hora de tomar " + agenda.getNome()
                 );
             }
-
-            List<Lembrete> lembretes = lembreteRepository.findByDataAndHorario(
-                    agora.toLocalDate(),
-                    horarioAtual
-            );
-
-            for (Lembrete lembrete : lembretes) {
-                String corpo = lembrete.getDescricao() == null
-                        || lembrete.getDescricao().isBlank()
-                        ? "Você tem um lembrete agendado para agora."
-                        : lembrete.getDescricao();
-
-                enviarParaUsuario(
-                        lembrete.getUsuario(),
-                        "Lembrete: " + lembrete.getTitulo(),
-                        corpo
-                );
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
         }
     }
 
-    private void enviarParaUsuario(Usuario usuario, String titulo, String corpo) {
-        if (usuario == null
+    private void verificarLembretes(LocalDateTime inicio, LocalDateTime agora) {
+        List<Lembrete> lembretes = lembreteRepository.findByDataBetween(
+                inicio.toLocalDate(),
+                agora.toLocalDate()
+        );
+
+        for (Lembrete lembrete : lembretes) {
+            LocalDateTime horarioAgendado =
+                    LocalDateTime.of(lembrete.getData(), lembrete.getHorario());
+            if (!estaNaJanela(horarioAgendado, inicio, agora)) {
+                continue;
+            }
+
+            String corpo = lembrete.getDescricao() == null
+                    || lembrete.getDescricao().isBlank()
+                    ? "Você tem um lembrete agendado para agora."
+                    : lembrete.getDescricao();
+
+            enviarUmaVez(
+                    "lembrete|" + lembrete.getId() + "|" + horarioAgendado,
+                    horarioAgendado,
+                    lembrete.getUsuario(),
+                    "Lembrete: " + lembrete.getTitulo(),
+                    corpo
+            );
+        }
+    }
+
+    private boolean estaNaJanela(
+            LocalDateTime horario,
+            LocalDateTime inicio,
+            LocalDateTime fim) {
+        return horario.isAfter(inicio) && !horario.isAfter(fim);
+    }
+
+    private void enviarUmaVez(
+            String chave,
+            LocalDateTime horario,
+            Usuario usuario,
+            String titulo,
+            String corpo) {
+        if (notificacoesEnviadas.containsKey(chave)
+                || usuario == null
                 || "browser".equalsIgnoreCase(usuario.getTipoNotificacao())
                 || usuario.getFcmToken() == null
                 || usuario.getFcmToken().isBlank()) {
@@ -83,9 +147,17 @@ public class AgendadorNotificacaoService {
         }
 
         try {
-            notificacaoService.enviar(usuario.getFcmToken(), titulo, corpo);
+            String messageId =
+                    notificacaoService.enviar(usuario.getFcmToken(), titulo, corpo);
+            notificacoesEnviadas.put(chave, horario);
+            LOGGER.info("Notificacao enviada: chave={}, messageId={}", chave, messageId);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            LOGGER.error("Falha ao enviar notificacao: chave={}", chave, exception);
         }
+    }
+
+    private void limparDeduplicacao(LocalDateTime limite) {
+        notificacoesEnviadas.entrySet()
+                .removeIf(entry -> entry.getValue().isBefore(limite));
     }
 }

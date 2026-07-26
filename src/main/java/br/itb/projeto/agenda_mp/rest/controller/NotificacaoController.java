@@ -23,11 +23,6 @@ public ResponseEntity<?> teste(@RequestBody Map<String, String> body) {
 
         String token = body.get("token");
 
-        System.out.println("==================================");
-        System.out.println("TOKEN RECEBIDO:");
-        System.out.println(token);
-        System.out.println("==================================");
-
         String resposta = notificacaoService.enviar(
                 token,
                 "PharmaLife",
@@ -41,7 +36,7 @@ public ResponseEntity<?> teste(@RequestBody Map<String, String> body) {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.toString());
+                .body("Não foi possível enviar a notificação.");
     }
 }
 }

@@ -46,6 +46,9 @@ public class HistoricoService {
                 .orElseThrow(() -> new IllegalArgumentException("Agenda não encontrada: " + agendaId));
         Medicamento medicamento = medicamentoRepository.findById(medicamentoId)
                 .orElseThrow(() -> new IllegalArgumentException("Medicamento não encontrado: " + medicamentoId));
+        if (medicamento.getAgenda() == null || !agendaId.equals(medicamento.getAgenda().getId())) {
+            throw new IllegalArgumentException("Medicamento não pertence à agenda informada.");
+        }
         historico.setAgenda(agenda);
         historico.setMedicamento(medicamento);
         historico.setStatus(normalizarStatus(historico.getStatus()));

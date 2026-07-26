@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +26,6 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = {
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://pharmalife-81306.web.app",   // Firebase (produção)
-    "https://pharmalife-81306.firebaseapp.com" // Firebase (alternativo)
-})
 public class UsuarioController {
 
     private static final LocalDate ONBOARDING_PENDING_DATE = LocalDate.of(1900, 1, 1);
@@ -172,9 +165,6 @@ public ResponseEntity<?> googleLogin(@RequestBody java.util.Map<String, String> 
     try {
 
         String token = body.get("token");
-
-        System.out.println("========== TOKEN RECEBIDO ==========");
-        System.out.println(token);
 
         FirebaseToken decodedToken =
                 FirebaseAuth.getInstance().verifyIdToken(token);

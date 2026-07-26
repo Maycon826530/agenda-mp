@@ -103,6 +103,7 @@ public void setDataNascimento(LocalDate dataNascimento) {
     }
 
     @Column(length = 500)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String fcmToken;
 
     public String getFcmToken() {

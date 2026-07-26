@@ -1,9 +1,8 @@
 package br.itb.projeto.agenda_mp.service;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-
-import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,50 +20,27 @@ public class AgendadorNotificacaoService {
     @Autowired
     private NotificacaoService notificacaoService;
 
-    @PostConstruct
-    public void teste() {
-        System.out.println("SERVIÇO DO SCHEDULER CARREGADO");
-    }
-
     @Scheduled(cron = "0 * * * * *")
     public void verificarMedicamentos() {
 
-        LocalTime agora = LocalTime.now()
+        LocalDateTime agora = LocalDateTime.now()
                 .withSecond(0)
                 .withNano(0);
-
-        System.out.println("=================================");
-        System.out.println("SCHEDULER RODANDO");
-        System.out.println("Verificando horário: " + agora);
-        System.out.println("=================================");
+        LocalTime horarioAtual = agora.toLocalTime();
 
         try {
 
-            List<Agenda> todas = agendaRepository.findAll();
-
-            System.out.println("Total agendas: " + todas.size());
-
-            for (Agenda agenda : todas) {
-                System.out.println(
-                        "ID: " + agenda.getId() +
-                        " | Horário banco: " + agenda.getHorario() +
-                        " | Igual? " + agenda.getHorario().equals(agora)
-                );
-            }
-
-            List<Agenda> agendas = todas.stream()
-                    .filter(a -> a.getHorario().equals(agora))
-                    .toList();
-
-            System.out.println("Encontradas: " + agendas.size());
+            List<Agenda> agendas =
+                    agendaRepository.findByHorarioAndDataInicioLessThanEqualAndDataFimGreaterThanEqual(
+                            horarioAtual,
+                            agora,
+                            agora
+                    );
 
             for (Agenda agenda : agendas) {
 
-                System.out.println("Medicamento encontrado: " + agenda.getNome());
-
                 String tipoNotificacao = agenda.getUsuario().getTipoNotificacao();
                 if ("browser".equalsIgnoreCase(tipoNotificacao)) {
-                    System.out.println("Usuario usa notificacao pelo browser. Push FCM ignorado.");
                     continue;
                 }
 
@@ -80,13 +56,9 @@ public class AgendadorNotificacaoService {
                                 "Está na hora de tomar " + agenda.getNome()
                         );
 
-                        System.out.println("Notificação enviada!");
-
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                } else {
-                    System.out.println("Usuário sem token FCM.");
                 }
             }
 

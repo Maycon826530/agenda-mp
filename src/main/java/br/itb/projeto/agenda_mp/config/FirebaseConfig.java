@@ -18,18 +18,13 @@ public class FirebaseConfig {
     @PostConstruct
     public void initialize() {
 
-        System.out.println("========== FIREBASE CONFIG CARREGADO ==========");
-
         try {
 
             String credentials = System.getenv("FIREBASE_CREDENTIALS");
 
-            System.out.println("Variável FIREBASE_CREDENTIALS encontrada? "
-                    + (credentials != null));
-
-            if (credentials == null) {
-                throw new RuntimeException(
-                        "Variável FIREBASE_CREDENTIALS não encontrada!");
+            if (credentials == null || credentials.isBlank()) {
+                throw new IllegalStateException(
+                        "Variável FIREBASE_CREDENTIALS não encontrada.");
             }
 
             InputStream serviceAccount = new ByteArrayInputStream(
@@ -43,10 +38,8 @@ public class FirebaseConfig {
                 FirebaseApp.initializeApp(options);
             }
 
-            System.out.println("Firebase Admin inicializado com sucesso!");
-
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Não foi possível inicializar o Firebase Admin.", e);
         }
     }
 }

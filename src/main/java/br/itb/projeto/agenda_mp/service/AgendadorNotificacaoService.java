@@ -35,7 +35,8 @@ public class AgendadorNotificacaoService {
         System.out.println("SCHEDULER RODANDO - Verificando horário: " + agora);
 
         try {
-            List<Agenda> agendas = agendaRepository.findAll().stream()
+            List<Agenda> todasAsAgendas = agendaRepository.findAll();
+            List<Agenda> agendas = todasAsAgendas.stream()
                     .filter(agenda -> agenda.getHorario() != null)
                     .filter(agenda -> agenda.getHorario()
                             .withSecond(0)
@@ -43,13 +44,37 @@ public class AgendadorNotificacaoService {
                             .equals(agora))
                     .toList();
 
+            System.out.println(
+                    "Agendas carregadas: " + todasAsAgendas.size()
+                    + " | Agendas no horário: " + agendas.size()
+            );
+
             for (Agenda agenda : agendas) {
-                String tipoNotificacao = agenda.getUsuario().getTipoNotificacao();
-                if ("browser".equalsIgnoreCase(tipoNotificacao)) {
+                if (agenda.getUsuario() == null) {
+                    System.out.println(
+                            "Agenda " + agenda.getId() + " sem usuário vinculado."
+                    );
                     continue;
                 }
 
+                String tipoNotificacao = agenda.getUsuario().getTipoNotificacao();
                 String token = agenda.getUsuario().getFcmToken();
+
+                System.out.println(
+                        "Agenda encontrada: id=" + agenda.getId()
+                        + " | nome=" + agenda.getNome()
+                        + " | horario=" + agenda.getHorario()
+                        + " | tipo=" + tipoNotificacao
+                        + " | tokenConfigurado=" + (token != null && !token.isBlank())
+                );
+
+                if ("browser".equalsIgnoreCase(tipoNotificacao)) {
+                    System.out.println(
+                            "FCM ignorado porque o usuário escolheu o modo Browser."
+                    );
+                    continue;
+                }
+
                 if (token == null || token.isBlank()) {
                     System.out.println("Usuário sem token FCM. Agenda: " + agenda.getId());
                     continue;

@@ -35,6 +35,10 @@ public class Usuario {
     @Column(name = "tipo_notificacao", nullable = false, length = 20)
     private String tipoNotificacao = "sistema";
 
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String authToken;
+
     public Usuario() {}
 
     // Getters e Setters
@@ -100,6 +104,14 @@ public void setDataNascimento(LocalDate dataNascimento) {
 
     public void setTipoNotificacao(String tipoNotificacao) {
         this.tipoNotificacao = tipoNotificacao;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
     }
 
     @Column(length = 500)

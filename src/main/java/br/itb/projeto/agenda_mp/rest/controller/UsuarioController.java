@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseToken;
 
 import br.itb.projeto.agenda_mp.model.entity.Usuario;
 import br.itb.projeto.agenda_mp.rest.dto.UpdateProfileRequest;
+import br.itb.projeto.agenda_mp.security.AuthTokenService;
 import br.itb.projeto.agenda_mp.service.UsuarioService;
 
 import java.time.LocalDate;
@@ -42,6 +43,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private AuthTokenService authTokenService;
 
     @GetMapping
     public ResponseEntity<?> findAll() {
@@ -88,6 +92,7 @@ public class UsuarioController {
             }
 
             Usuario novoUsuario = usuarioService.save(usuario);
+            novoUsuario.setAuthToken(authTokenService.generate(novoUsuario.getId()));
             return ResponseEntity.ok(novoUsuario);
         } catch (Exception e) {
             System.err.println("Erro ao criar usuário: " + e.getMessage());
@@ -132,7 +137,9 @@ public class UsuarioController {
 
             if (usuario.isPresent()) {
                 System.out.println("Login bem-sucedido para: " + _usuario.getEmail());
-                return ResponseEntity.ok(usuario.get());
+                Usuario usuarioAutenticado = usuario.get();
+                usuarioAutenticado.setAuthToken(authTokenService.generate(usuarioAutenticado.getId()));
+                return ResponseEntity.ok(usuarioAutenticado);
             } else {
                 System.out.println("Usuário não encontrado para email: " + _usuario.getEmail());
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado ou senha incorreta");
@@ -201,6 +208,7 @@ usuario.setDataNascimento(ONBOARDING_PENDING_DATE);    usuario.setComorbidade(""
     usuario = usuarioService.save(usuario);
 }
 
+        usuario.setAuthToken(authTokenService.generate(usuario.getId()));
         return ResponseEntity.ok(usuario);
 
     } catch (Exception e) {

@@ -1,8 +1,6 @@
 package br.itb.projeto.agenda_mp.service;
 
-import br.itb.projeto.agenda_mp.model.entity.Agenda;
 import br.itb.projeto.agenda_mp.model.entity.Usuario;
-import br.itb.projeto.agenda_mp.model.repository.AgendaRepository;
 import br.itb.projeto.agenda_mp.model.repository.MedicamentoRepository;
 import br.itb.projeto.agenda_mp.model.repository.UsuarioRepository;
 import br.itb.projeto.agenda_mp.rest.dto.AdminMedicamentoDto;
@@ -16,14 +14,14 @@ import java.util.Optional;
 @Service
 public class AdminService {
     private final UsuarioRepository usuarioRepository;
-    private final AgendaRepository agendaRepository;
     private final MedicamentoRepository medicamentoRepository;
+    private final UsuarioService usuarioService;
 
-    public AdminService(UsuarioRepository usuarioRepository, AgendaRepository agendaRepository,
-                        MedicamentoRepository medicamentoRepository) {
+    public AdminService(UsuarioRepository usuarioRepository,
+                        MedicamentoRepository medicamentoRepository, UsuarioService usuarioService) {
         this.usuarioRepository = usuarioRepository;
-        this.agendaRepository = agendaRepository;
         this.medicamentoRepository = medicamentoRepository;
+        this.usuarioService = usuarioService;
     }
 
     @Transactional(readOnly = true)
@@ -39,10 +37,12 @@ public class AdminService {
                 AdminUsuarioDto.from(usuario, medicamentosDoUsuario(usuario)));
     }
 
+    public boolean excluirUsuario(Long id) {
+        return usuarioService.deleteByAdmin(id);
+    }
+
     private List<AdminMedicamentoDto> medicamentosDoUsuario(Usuario usuario) {
-        return agendaRepository.findByUsuarioId(usuario.getId()).stream()
-                .map(Agenda::getId)
-                .flatMap(agendaId -> medicamentoRepository.findByAgendaId(agendaId).stream())
+        return medicamentoRepository.findByAgendaUsuarioId(usuario.getId()).stream()
                 .map(AdminMedicamentoDto::from)
                 .toList();
     }

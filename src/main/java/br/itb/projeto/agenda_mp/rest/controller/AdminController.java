@@ -3,6 +3,8 @@ package br.itb.projeto.agenda_mp.rest.controller;
 import br.itb.projeto.agenda_mp.rest.dto.AdminUsuarioDto;
 import br.itb.projeto.agenda_mp.service.AdminService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,5 +31,16 @@ public class AdminController {
         return adminService.buscarUsuario(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> excluirUsuario(@PathVariable Long id, Authentication authentication) {
+        if (authentication != null && id.equals(authentication.getPrincipal())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return adminService.excluirUsuario(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

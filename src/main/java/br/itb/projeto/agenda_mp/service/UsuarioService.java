@@ -110,6 +110,22 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
+    @Transactional
+    public boolean deleteByAdmin(Long id) {
+        if (!usuarioRepository.existsById(id)) return false;
+
+        var agendas = agendaRepository.findByUsuarioId(id);
+        for (var agenda : agendas) {
+            historicoRepository.deleteByAgendaId(agenda.getId());
+            medicamentoRepository.deleteByAgendaId(agenda.getId());
+        }
+
+        lembreteRepository.deleteByUsuarioId(id);
+        agendaRepository.deleteAll(agendas);
+        usuarioRepository.deleteById(id);
+        return true;
+    }
+
     public Optional<Usuario> findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }

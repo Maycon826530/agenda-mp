@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 import br.itb.projeto.agenda_mp.model.entity.Usuario;
+import br.itb.projeto.agenda_mp.model.entity.Role;
 import br.itb.projeto.agenda_mp.rest.dto.UpdateProfileRequest;
 import br.itb.projeto.agenda_mp.security.AuthTokenService;
 import br.itb.projeto.agenda_mp.service.UsuarioService;
@@ -85,6 +86,7 @@ public class UsuarioController {
 
             usuario.setDataNascimento(ONBOARDING_PENDING_DATE);
             usuario.setComorbidade("");
+            usuario.setRole(Role.USER);
 
             Optional<Usuario> usuarioExistente = usuarioService.findByEmail(usuario.getEmail());
             if (usuarioExistente.isPresent()) {

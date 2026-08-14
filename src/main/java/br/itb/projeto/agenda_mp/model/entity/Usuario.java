@@ -35,6 +35,10 @@ public class Usuario {
     @Column(name = "tipo_notificacao", nullable = false, length = 20)
     private String tipoNotificacao = "sistema";
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER;
+
     @Transient
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String authToken;
@@ -104,6 +108,14 @@ public void setDataNascimento(LocalDate dataNascimento) {
 
     public void setTipoNotificacao(String tipoNotificacao) {
         this.tipoNotificacao = tipoNotificacao;
+    }
+
+    public Role getRole() {
+        return role == null ? Role.USER : role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role == null ? Role.USER : role;
     }
 
     public String getAuthToken() {

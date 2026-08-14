@@ -1,10 +1,11 @@
 package br.itb.projeto.agenda_mp.security;
 
 import java.io.IOException;
-import java.util.List;
-
+import br.itb.projeto.agenda_mp.model.entity.Usuario;
+import br.itb.projeto.agenda_mp.model.repository.UsuarioRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,9 +18,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final AuthTokenService authTokenService;
+    private final UsuarioRepository usuarioRepository;
 
-    public AuthTokenFilter(AuthTokenService authTokenService) {
+    public AuthTokenFilter(AuthTokenService authTokenService, UsuarioRepository usuarioRepository) {
         this.authTokenService = authTokenService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
@@ -31,11 +34,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith("Bearer ")) {
             Long usuarioId = authTokenService.validateAndGetUsuarioId(authorization.substring(7));
             if (usuarioId != null) {
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(usuarioId, null, List.of())
-                );
+                usuarioRepository.findById(usuarioId).ifPresent(usuario -> autenticar(usuario));
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void autenticar(Usuario usuario) {
+        var authorities = java.util.List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRole().name()));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(usuario.getId(), null, authorities));
     }
 }

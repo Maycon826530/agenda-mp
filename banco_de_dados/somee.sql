@@ -83,14 +83,14 @@ CREATE TABLE Lembrete
 );
 GO
 
-CREATE TABLE RecuperarSenha
+CREATE TABLE recuperar_senha
 ( 
-   id				   INT				IDENTITY,
+   id				   BIGINT			IDENTITY,
    email			   VARCHAR(254)	NOT NULL, -- username
-   codigo			CHAR(6)			NOT NULL,
-   geradoEm			SMALLDATETIME	NOT NULL DEFAULT GETDATE(),
-   exepiraEm		SMALLDATETIME	NOT NULL,
-   statusCodigo	BIT				NOT NULL DEFAULT 1, -- 1 = ATIVO ou 0 = INATIVO
+   codigo			VARCHAR(6)		NOT NULL,
+   gerado_em		DATETIME2		NOT NULL DEFAULT GETDATE(),
+   exepira_em		DATETIME2		NOT NULL,
+   status_codigo	BIT				NOT NULL DEFAULT 1, -- 1 = ATIVO ou 0 = INATIVO
 
    PRIMARY KEY (id)
 );

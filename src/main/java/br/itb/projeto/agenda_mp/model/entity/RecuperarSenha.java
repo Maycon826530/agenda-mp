@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "\"RecuperarSenha\"")
+@Table(name = "recuperar_senha")
 public class RecuperarSenha {
 
     @Id
@@ -20,13 +20,13 @@ public class RecuperarSenha {
     private String email;
     private String codigo;
 
-    @Column(name = "\"geradoEm\"")
+    @Column(name = "gerado_em")
     private LocalDateTime geradoEm;
 
-    @Column(name = "\"exepiraEm\"")
+    @Column(name = "exepira_em")
     private LocalDateTime exepiraEm;
 
-    @Column(name = "\"statusCodigo\"")
+    @Column(name = "status_codigo")
     private Boolean statusCodigo;
 
     public Long getId() {

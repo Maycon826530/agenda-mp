@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "recuperar_senha")
+@Table(name = "recuperar_senha", schema = "dbo")
 public class RecuperarSenha {
 
     @Id

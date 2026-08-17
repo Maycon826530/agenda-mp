@@ -1,7 +1,7 @@
 package br.itb.projeto.agenda_mp.service;
 
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.security.SecureRandom;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,6 +15,8 @@ import br.itb.projeto.agenda_mp.model.repository.UsuarioRepository;
 
 @Service
 public class RecuperarSenhaService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private RecuperarSenhaRepository recuperarSenhaRepository;
     private UsuarioRepository usuarioRepository;
@@ -43,6 +45,7 @@ public class RecuperarSenhaService {
             recuperarSenha.setCodigo(codigo);
             recuperarSenha.setGeradoEm(agora);
             recuperarSenha.setExepiraEm(expiracao);
+            recuperarSenha.setStatusCodigo(true);
 
             recuperarSenhaRepository.save(recuperarSenha);
 
@@ -51,6 +54,9 @@ public class RecuperarSenhaService {
     }
 
     public void redefinirSenha(String email, String codigo, String novaSenha) {
+        if (novaSenha == null || novaSenha.length() < 6) {
+            throw new RuntimeException("A nova senha deve ter pelo menos 6 caracteres.");
+        }
         RecuperarSenha registro = recuperarSenhaRepository.findByEmailAndCodigoAndStatusCodigoTrue(email, codigo)
                 .orElseThrow(() -> new RuntimeException("CÃ³digo invÃ¡lido ou expirado."));
 
@@ -75,7 +81,7 @@ public class RecuperarSenhaService {
     }
 
     private String gerarCodigo() {
-        return String.format("%06d", new Random().nextInt(999999));
+        return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
     }
 
     private void enviarCodigo(String email, String codigo) {

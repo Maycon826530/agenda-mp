@@ -1,10 +1,8 @@
 package br.itb.projeto.agenda_mp.service;
 
-import java.time.LocalDateTime;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,45 +16,42 @@ public class RecuperarSenhaService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    private RecuperarSenhaRepository recuperarSenhaRepository;
-    private UsuarioRepository usuarioRepository;
-    private JavaMailSender mailSender;
-    private PasswordEncoder passwordEncoder;
+    private final RecuperarSenhaRepository recuperarSenhaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
-    public RecuperarSenhaService(RecuperarSenhaRepository recuperarSenhaRepository, UsuarioRepository usuarioRepository,
-            JavaMailSender mailSender, PasswordEncoder passwordEncoder) {
+    public RecuperarSenhaService(RecuperarSenhaRepository recuperarSenhaRepository,
+            UsuarioRepository usuarioRepository, EmailService emailService, PasswordEncoder passwordEncoder) {
         this.recuperarSenhaRepository = recuperarSenhaRepository;
         this.usuarioRepository = usuarioRepository;
-        this.mailSender = mailSender;
+        this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
     }
 
     public void solicitarCodigo(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        if (usuario != null) {
-            String codigo = gerarCodigo();
-            LocalDateTime agora = LocalDateTime.now();
-            LocalDateTime expiracao = agora.plusMinutes(15);
+        String codigo = gerarCodigo();
+        LocalDateTime agora = LocalDateTime.now();
 
-            RecuperarSenha recuperarSenha = new RecuperarSenha();
-            recuperarSenha.setEmail(email);
-            recuperarSenha.setCodigo(codigo);
-            recuperarSenha.setGeradoEm(agora);
-            recuperarSenha.setExepiraEm(expiracao);
-            recuperarSenha.setStatusCodigo(true);
+        RecuperarSenha recuperarSenha = new RecuperarSenha();
+        recuperarSenha.setEmail(email);
+        recuperarSenha.setCodigo(codigo);
+        recuperarSenha.setGeradoEm(agora);
+        recuperarSenha.setExepiraEm(agora.plusMinutes(15));
+        recuperarSenha.setStatusCodigo(true);
 
-            recuperarSenhaRepository.save(recuperarSenha);
-
-            enviarCodigo(email, codigo);
-        }
+        recuperarSenhaRepository.save(recuperarSenha);
+        emailService.enviarCodigo(email, codigo);
     }
 
     public void redefinirSenha(String email, String codigo, String novaSenha) {
         if (novaSenha == null || novaSenha.length() < 6) {
             throw new RuntimeException("A nova senha deve ter pelo menos 6 caracteres.");
         }
+
         RecuperarSenha registro = recuperarSenhaRepository.findByEmailAndCodigoAndStatusCodigoTrue(email, codigo)
                 .orElseThrow(() -> new RuntimeException("Código inválido ou expirado."));
 
@@ -82,16 +77,5 @@ public class RecuperarSenhaService {
 
     private String gerarCodigo() {
         return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
-    }
-
-    private void enviarCodigo(String email, String codigo) {
-        SimpleMailMessage mensagem = new SimpleMailMessage();
-        mensagem.setTo(email);
-        mensagem.setSubject("Código de recuperação de senha");
-        mensagem.setText("Seu código de recuperação é: " + codigo
-                + ".\n" + "Este código expira em 15 minutos."
-                + "\n" + "Não responda esse e-mail.");
-
-        mailSender.send(mensagem);
     }
 }

@@ -83,6 +83,19 @@ CREATE TABLE Lembrete
 );
 GO
 
+CREATE TABLE RecuperarSenha
+( 
+   id				   INT				IDENTITY,
+   email			   VARCHAR(254)	NOT NULL, -- username
+   codigo			CHAR(6)			NOT NULL,
+   geradoEm			SMALLDATETIME	NOT NULL DEFAULT GETDATE(),
+   exepiraEm		SMALLDATETIME	NOT NULL,
+   statusCodigo	BIT				NOT NULL DEFAULT 1, -- 1 = ATIVO ou 0 = INATIVO
+
+   PRIMARY KEY (id)
+);
+GO
+
 CREATE INDEX IX_Lembrete_Usuario_Data
 ON Lembrete (usuarios_id, data, horario);
 GO

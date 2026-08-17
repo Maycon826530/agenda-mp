@@ -3,13 +3,14 @@ package br.itb.projeto.agenda_mp.model.entity;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "RecuperarSenha")
+@Table(name = "\"RecuperarSenha\"")
 public class RecuperarSenha {
 
     @Id
@@ -19,8 +20,13 @@ public class RecuperarSenha {
     private String email;
     private String codigo;
 
+    @Column(name = "\"geradoEm\"")
     private LocalDateTime geradoEm;
+
+    @Column(name = "\"exepiraEm\"")
     private LocalDateTime exepiraEm;
+
+    @Column(name = "\"statusCodigo\"")
     private Boolean statusCodigo;
 
     public Long getId() {

@@ -33,7 +33,7 @@ public class RecuperarSenhaService {
 
     public void solicitarCodigo(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("UsuÃ¡rio nÃ£o encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         if (usuario != null) {
             String codigo = gerarCodigo();
@@ -58,14 +58,14 @@ public class RecuperarSenhaService {
             throw new RuntimeException("A nova senha deve ter pelo menos 6 caracteres.");
         }
         RecuperarSenha registro = recuperarSenhaRepository.findByEmailAndCodigoAndStatusCodigoTrue(email, codigo)
-                .orElseThrow(() -> new RuntimeException("CÃ³digo invÃ¡lido ou expirado."));
+                .orElseThrow(() -> new RuntimeException("Código inválido ou expirado."));
 
         if (registro.getExepiraEm().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("CÃ³digo expirado.");
+            throw new RuntimeException("Código expirado.");
         }
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("UsuÃ¡rio nÃ£o encontrado."));
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
         usuario.setSenha(passwordEncoder.encode(novaSenha));
         usuarioRepository.save(usuario);
@@ -87,10 +87,10 @@ public class RecuperarSenhaService {
     private void enviarCodigo(String email, String codigo) {
         SimpleMailMessage mensagem = new SimpleMailMessage();
         mensagem.setTo(email);
-        mensagem.setSubject("CÃ³digo de RecuperaÃ§Ã£o de senha");
-        mensagem.setText("Seu cÃ³digo de recuperaÃ§Ã£o Ã©: " + codigo
-                + ".\n" + "Este cÃ³digo expira em 15 minutos."
-                + "\n" + "NÃ£o responda esse e-mail.");
+        mensagem.setSubject("Código de recuperação de senha");
+        mensagem.setText("Seu código de recuperação é: " + codigo
+                + ".\n" + "Este código expira em 15 minutos."
+                + "\n" + "Não responda esse e-mail.");
 
         mailSender.send(mensagem);
     }

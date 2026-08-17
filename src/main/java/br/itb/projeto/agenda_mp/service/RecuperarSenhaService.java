@@ -30,8 +30,8 @@ public class RecuperarSenhaService {
     }
 
     public void solicitarCodigo(String email) {
-        Usuario usuario = usuarioRepository.findByUsername(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("UsuÃ¡rio nÃ£o encontrado"));
 
         if (usuario != null) {
             String codigo = gerarCodigo();
@@ -52,17 +52,16 @@ public class RecuperarSenhaService {
 
     public void redefinirSenha(String email, String codigo, String novaSenha) {
         RecuperarSenha registro = recuperarSenhaRepository.findByEmailAndCodigoAndStatusCodigoTrue(email, codigo)
-                .orElseThrow(() -> new RuntimeException("Código inválido ou expirado."));
+                .orElseThrow(() -> new RuntimeException("CÃ³digo invÃ¡lido ou expirado."));
 
         if (registro.getExepiraEm().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Código expirado.");
+            throw new RuntimeException("CÃ³digo expirado.");
         }
 
-        Usuario usuario = usuarioRepository.findByUsername(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("UsuÃ¡rio nÃ£o encontrado."));
 
-        usuario.setPassword(passwordEncoder.encode(novaSenha));
-        usuario.setDataAtualizacao(LocalDateTime.now());
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
         usuarioRepository.save(usuario);
 
         registro.setStatusCodigo(false);
@@ -82,10 +81,10 @@ public class RecuperarSenhaService {
     private void enviarCodigo(String email, String codigo) {
         SimpleMailMessage mensagem = new SimpleMailMessage();
         mensagem.setTo(email);
-        mensagem.setSubject("Código de Recuperação de senha");
-        mensagem.setText("Seu código de recuperação é: " + codigo
-                + ".\n" + "Este código expira em 15 minutos."
-                + "\n" + "Não responda esse e-mail.");
+        mensagem.setSubject("CÃ³digo de RecuperaÃ§Ã£o de senha");
+        mensagem.setText("Seu cÃ³digo de recuperaÃ§Ã£o Ã©: " + codigo
+                + ".\n" + "Este cÃ³digo expira em 15 minutos."
+                + "\n" + "NÃ£o responda esse e-mail.");
 
         mailSender.send(mensagem);
     }

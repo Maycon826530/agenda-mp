@@ -10,7 +10,11 @@ import br.itb.projeto.agenda_mp.rest.dto.RedefinirSenhaDTO;
 @RequestMapping("/recuperar-senha")
 public class RecuperarSenhaController {
 
-    private RecuperarSenhaService recuperarSenhaService;
+    private final RecuperarSenhaService recuperarSenhaService;
+
+    public RecuperarSenhaController(RecuperarSenhaService recuperarSenhaService) {
+        this.recuperarSenhaService = recuperarSenhaService;
+    }
 
     @PostMapping("/solicitar-codigo")
     public ResponseEntity<String> solicitarCodigo(@RequestParam String email) {

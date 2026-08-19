@@ -42,6 +42,9 @@ public class AdminService {
                 AdminUsuarioDto.from(usuario, medicamentosDoUsuario(usuario), lembretesDoUsuario(usuario)));
     }
 
+    public Optional<Usuario> atualizarUsuario(Long id, Usuario usuario) {
+        return usuarioService.update(id, usuario);
+    }
     public boolean excluirUsuario(Long id) {
         return usuarioService.deleteByAdmin(id);
     }

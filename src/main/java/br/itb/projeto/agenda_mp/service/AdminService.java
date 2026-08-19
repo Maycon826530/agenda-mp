@@ -43,7 +43,11 @@ public class AdminService {
     }
 
     public Optional<Usuario> atualizarUsuario(Long id, Usuario usuario) {
-        return usuarioService.update(id, usuario);
+        return usuarioRepository.findById(id).flatMap(usuarioAtual -> {
+            // Dados de saúde podem ser consultados pelo administrador, mas não alterados.
+            usuario.setComorbidade(usuarioAtual.getComorbidade());
+            return usuarioService.update(id, usuario);
+        });
     }
     public boolean excluirUsuario(Long id) {
         return usuarioService.deleteByAdmin(id);

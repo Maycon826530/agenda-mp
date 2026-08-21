@@ -49,6 +49,35 @@ public class EmailService {
                 .toBodilessEntity();
     }
 
+    public void enviarLembreteMedicamentoAtrasado(
+            String destino, String nomeUsuario, String medicamento, String dosagem, String horario) {
+        validarConfiguracao();
+
+        String saudacao = StringUtils.hasText(nomeUsuario) ? "Ol\u00e1, " + nomeUsuario + "!" : "Ol\u00e1!";
+        String detalheDosagem = StringUtils.hasText(dosagem) ? " (" + dosagem + ")" : "";
+        String conteudo = saudacao + "\n\n"
+                + "O medicamento " + medicamento + detalheDosagem
+                + ", previsto para " + horario + ", ainda n\u00e3o foi marcado como tomado.\n"
+                + "Acesse a Agenda de Medicamentos Pessoais para atualizar o registro.\n\n"
+                + "Se voc\u00ea j\u00e1 tomou o medicamento, apenas confirme o uso no site.\n"
+                + "N\u00e3o responda este e-mail.";
+
+        Map<String, Object> mensagem = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", destino)),
+                "subject", "Voc\u00ea tem um medicamento atrasado",
+                "textContent", conteudo);
+
+        restClient.post()
+                .uri(BREVO_EMAIL_ENDPOINT)
+                .header("api-key", apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(mensagem)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
     private void validarConfiguracao() {
         if (!StringUtils.hasText(apiKey) || !StringUtils.hasText(senderEmail)) {
             throw new IllegalStateException(

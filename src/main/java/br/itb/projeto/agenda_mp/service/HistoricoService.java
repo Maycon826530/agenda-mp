@@ -52,6 +52,12 @@ public class HistoricoService {
         historico.setAgenda(agenda);
         historico.setMedicamento(medicamento);
         historico.setStatus(normalizarStatus(historico.getStatus()));
+        if ("TOMADO".equals(historico.getStatus()) && historico.getDataConfirmacao() == null) {
+            historico.setDataConfirmacao(LocalDateTime.now());
+        }
+        if ("IGNORADO".equals(historico.getStatus()) && historico.getDataHoraIgnorado() == null) {
+            historico.setDataHoraIgnorado(LocalDateTime.now());
+        }
         // Garante horario não nulo
         if (historico.getHorario() == null) {
             historico.setHorario(LocalTime.now());

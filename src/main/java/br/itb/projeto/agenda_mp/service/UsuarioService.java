@@ -5,6 +5,7 @@ import br.itb.projeto.agenda_mp.model.repository.AgendaRepository;
 import br.itb.projeto.agenda_mp.model.repository.HistoricoRepository;
 import br.itb.projeto.agenda_mp.model.repository.LembreteRepository;
 import br.itb.projeto.agenda_mp.model.repository.MedicamentoRepository;
+import br.itb.projeto.agenda_mp.model.repository.NotificacaoAtrasoRepository;
 import br.itb.projeto.agenda_mp.model.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,6 +40,9 @@ public class UsuarioService {
 
     @Autowired
     private LembreteRepository lembreteRepository;
+
+    @Autowired
+    private NotificacaoAtrasoRepository notificacaoAtrasoRepository;
 
     public List<Usuario> findAll() {
         try {
@@ -93,16 +97,7 @@ public class UsuarioService {
         Usuario usuario = usuarioOpt.get();
         if (!senhaConfere(usuario, senhaAtual)) return false;
 
-        var agendas = agendaRepository.findByUsuarioId(id);
-
-        for (var agenda : agendas) {
-            historicoRepository.deleteByAgendaId(agenda.getId());
-            medicamentoRepository.deleteByAgendaId(agenda.getId());
-        }
-
-        lembreteRepository.deleteByUsuarioId(id);
-        agendaRepository.deleteAll(agendas);
-        usuarioRepository.deleteById(id);
+        excluirUsuarioEDadosRelacionados(id);
         return true;
     }
 
@@ -114,16 +109,19 @@ public class UsuarioService {
     public boolean deleteByAdmin(Long id) {
         if (!usuarioRepository.existsById(id)) return false;
 
-        var agendas = agendaRepository.findByUsuarioId(id);
-        for (var agenda : agendas) {
-            historicoRepository.deleteByAgendaId(agenda.getId());
-            medicamentoRepository.deleteByAgendaId(agenda.getId());
-        }
-
-        lembreteRepository.deleteByUsuarioId(id);
-        agendaRepository.deleteAll(agendas);
-        usuarioRepository.deleteById(id);
+        excluirUsuarioEDadosRelacionados(id);
         return true;
+    }
+
+    private void excluirUsuarioEDadosRelacionados(Long usuarioId) {
+        // As exclusoes em lote seguem a ordem das chaves estrangeiras. A transacao
+        // garante que nao seja possivel remover o usuario e deixar agendas orfas.
+        notificacaoAtrasoRepository.deleteByUsuarioId(usuarioId);
+        historicoRepository.deleteByUsuarioId(usuarioId);
+        medicamentoRepository.deleteByUsuarioId(usuarioId);
+        agendaRepository.deleteByUsuarioId(usuarioId);
+        lembreteRepository.deleteByUsuarioId(usuarioId);
+        usuarioRepository.deleteById(usuarioId);
     }
 
     public Optional<Usuario> findByEmail(String email) {

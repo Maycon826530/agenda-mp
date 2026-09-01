@@ -16,4 +16,9 @@ public interface MedicamentoRepository extends JpaRepository<Medicamento, Long> 
     @Modifying
     @Query("DELETE FROM Medicamento m WHERE m.agenda.id = :agendaId")
     void deleteByAgendaId(Long agendaId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Medicamento m WHERE m.agenda.id IN " +
+           "(SELECT a.id FROM Agenda a WHERE a.usuario.id = :usuarioId)")
+    int deleteByUsuarioId(Long usuarioId);
 }

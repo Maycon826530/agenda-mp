@@ -1,6 +1,7 @@
 package br.itb.projeto.agenda_mp.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -18,8 +19,9 @@ public class Usuario {
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 
-    @Column(length = 100)
-    private String comorbidade;
+    @Column(name = "comorbidade", length = 100)
+    @JsonAlias("comorbidade")
+    private String condicoesSaude;
 
     @Column(nullable = false, length = 100)
     private String email;
@@ -70,12 +72,12 @@ public class Usuario {
 public void setDataNascimento(LocalDate dataNascimento) {
     this.dataNascimento = dataNascimento;
 }
-    public String getComorbidade() {
-        return comorbidade;
+    public String getCondicoesSaude() {
+        return condicoesSaude;
     }
 
-    public void setComorbidade(String comorbidade) {
-        this.comorbidade = comorbidade;
+    public void setCondicoesSaude(String condicoesSaude) {
+        this.condicoesSaude = condicoesSaude;
     }
 
     public String getEmail() {

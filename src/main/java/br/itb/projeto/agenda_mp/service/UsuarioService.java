@@ -74,7 +74,7 @@ public class UsuarioService {
             usuario.setNome(dadosAtualizados.getNome());
             usuario.setEmail(dadosAtualizados.getEmail());
             usuario.setDataNascimento(dadosAtualizados.getDataNascimento());
-            usuario.setComorbidade(dadosAtualizados.getComorbidade());
+            usuario.setCondicoesSaude(dadosAtualizados.getCondicoesSaude());
 
             if (dadosAtualizados.getTipoNotificacao() != null) {
                 usuario.setTipoNotificacao(normalizarTipoNotificacao(dadosAtualizados.getTipoNotificacao()));
@@ -200,11 +200,11 @@ public class UsuarioService {
                 && !usuario.getNome().isBlank()
                 && usuario.getDataNascimento() != null
                 && !ONBOARDING_PENDING_DATE.equals(usuario.getDataNascimento())
-                && usuario.getComorbidade() != null
-                && !usuario.getComorbidade().isBlank();
+                && usuario.getCondicoesSaude() != null
+                && !usuario.getCondicoesSaude().isBlank();
     }
 
-    public Optional<Usuario> finalizarOnboarding(Long id, String nome, String dataNascimento, String comorbidade) {
+    public Optional<Usuario> finalizarOnboarding(Long id, String nome, String dataNascimento, String condicoesSaude) {
         if (nome == null || nome.isBlank() || dataNascimento == null || dataNascimento.isBlank()) {
             return Optional.empty();
         }
@@ -212,10 +212,10 @@ public class UsuarioService {
         return usuarioRepository.findById(id).map(usuario -> {
             usuario.setNome(nome.trim());
             usuario.setDataNascimento(LocalDate.parse(dataNascimento));
-            usuario.setComorbidade(
-                    comorbidade == null || comorbidade.isBlank()
-                            ? "Nao possuo comorbidades"
-                            : comorbidade.trim()
+            usuario.setCondicoesSaude(
+                    condicoesSaude == null || condicoesSaude.isBlank()
+                            ? "Nenhuma condicao de saude informada"
+                            : condicoesSaude.trim()
             );
             return usuarioRepository.save(usuario);
         });

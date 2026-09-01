@@ -85,7 +85,7 @@ public class UsuarioController {
             }
 
             usuario.setDataNascimento(ONBOARDING_PENDING_DATE);
-            usuario.setComorbidade("");
+            usuario.setCondicoesSaude("");
             usuario.setRole(Role.USER);
 
             Optional<Usuario> usuarioExistente = usuarioService.findByEmail(usuario.getEmail());
@@ -203,7 +203,7 @@ public ResponseEntity<?> googleLogin(@RequestBody java.util.Map<String, String> 
     usuario.setEmail(email);
     usuario.setFoto(foto);
 
-usuario.setDataNascimento(ONBOARDING_PENDING_DATE);    usuario.setComorbidade("");
+usuario.setDataNascimento(ONBOARDING_PENDING_DATE);    usuario.setCondicoesSaude("");
 
     usuario.setSenha(java.util.UUID.randomUUID().toString());
 
@@ -240,9 +240,9 @@ public ResponseEntity<?> finalizarOnboarding(@PathVariable Long id, @RequestBody
     try {
         String nome = body.get("nome");
         String dataNascimento = body.get("dataNascimento");
-        String comorbidade = body.get("comorbidade");
+        String condicoesSaude = body.getOrDefault("condicoesSaude", body.get("comorbidade"));
 
-        Optional<Usuario> usuarioAtualizado = usuarioService.finalizarOnboarding(id, nome, dataNascimento, comorbidade);
+        Optional<Usuario> usuarioAtualizado = usuarioService.finalizarOnboarding(id, nome, dataNascimento, condicoesSaude);
 
         if (usuarioAtualizado.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dados obrigatorios do onboarding invalidos");

@@ -3,7 +3,7 @@
    id INT IDENTITY,
    nome VARCHAR(100) NOT NULL,
    data_nascimento DATE NOT NULL,
-   comorbidade VARCHAR(100) NULL,
+   comorbidade VARCHAR(2000) NULL,
    email VARCHAR(100) NOT NULL,
    senha VARCHAR(100) NOT NULL,
    tipo_notificacao VARCHAR(20) NOT NULL DEFAULT 'sistema',

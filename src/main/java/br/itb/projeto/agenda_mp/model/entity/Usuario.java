@@ -19,7 +19,7 @@ public class Usuario {
     @Column(name = "data_nascimento", nullable = false)
     private LocalDate dataNascimento;
 
-    @Column(name = "comorbidade", length = 100)
+    @Column(name = "comorbidade", length = 2000)
     @JsonAlias("comorbidade")
     private String condicoesSaude;
 

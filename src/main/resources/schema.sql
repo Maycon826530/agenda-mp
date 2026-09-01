@@ -17,6 +17,14 @@ BEGIN
 END
 ^^^
 
+IF OBJECT_ID('dbo.Usuarios', 'U') IS NOT NULL
+   AND COL_LENGTH('dbo.Usuarios', 'comorbidade') IS NOT NULL
+   AND COL_LENGTH('dbo.Usuarios', 'comorbidade') < 2000
+BEGIN
+    ALTER TABLE dbo.Usuarios ALTER COLUMN comorbidade VARCHAR(2000) NULL;
+END
+^^^
+
 IF OBJECT_ID('dbo.Notificacao_Atraso', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Notificacao_Atraso
